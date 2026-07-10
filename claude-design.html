@@ -1,0 +1,454 @@
+<title>Claude — a design language</title>
+<style>
+  :root {
+    --paper: #EDEEE8;
+    --paper-raised: #E3E5DC;
+    --ink: #20242A;
+    --ink-soft: #5B6368;
+    --ink-faint: #8B9296;
+    --accent: #2C4A6E;
+    --accent-soft: #4E6D91;
+    --accent-wash: rgba(44, 74, 110, 0.09);
+    --rule: #C9CBC0;
+    --rule-strong: #9CA097;
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, ui-serif, serif;
+    --font-body: Optima, Candara, "Noto Sans", "Segoe UI", "Helvetica Neue", ui-sans-serif, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14171A;
+      --paper-raised: #1C2023;
+      --ink: #E7E4DC;
+      --ink-soft: #A7ACA4;
+      --ink-faint: #6E7470;
+      --accent: #C9A227;
+      --accent-soft: #A8862A;
+      --accent-wash: rgba(201, 162, 39, 0.10);
+      --rule: #32373A;
+      --rule-strong: #454B4E;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #14171A;
+    --paper-raised: #1C2023;
+    --ink: #E7E4DC;
+    --ink-soft: #A7ACA4;
+    --ink-faint: #6E7470;
+    --accent: #C9A227;
+    --accent-soft: #A8862A;
+    --accent-wash: rgba(201, 162, 39, 0.10);
+    --rule: #32373A;
+    --rule-strong: #454B4E;
+  }
+
+  :root[data-theme="light"] {
+    --paper: #EDEEE8;
+    --paper-raised: #E3E5DC;
+    --ink: #20242A;
+    --ink-soft: #5B6368;
+    --ink-faint: #8B9296;
+    --accent: #2C4A6E;
+    --accent-soft: #4E6D91;
+    --accent-wash: rgba(44, 74, 110, 0.09);
+    --rule: #C9CBC0;
+    --rule-strong: #9CA097;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .page { animation: settle 0.5s ease-out both; }
+  }
+  @keyframes settle {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 4.5rem 1.5rem 6rem;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--rule-strong);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 11vw, 5.25rem);
+    line-height: 0.95;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin: 1.6rem 0 0.6rem;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+
+  .standfirst {
+    font-size: 1.2rem;
+    line-height: 1.55;
+    max-width: 34em;
+    color: var(--ink-soft);
+    margin: 0 0 3.5rem;
+    text-wrap: pretty;
+  }
+
+  .standfirst em {
+    color: var(--accent);
+    font-style: normal;
+    border-bottom: 1px solid var(--accent-soft);
+  }
+
+  /* ---------- section rhythm ---------- */
+
+  section {
+    margin-top: 4rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.7rem;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+  }
+
+  .section-intro {
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+    line-height: 1.6;
+    max-width: 40em;
+    margin: 0 0 2rem;
+  }
+
+  /* ---------- palette ---------- */
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+
+  .swatch {
+    background: var(--paper);
+    padding: 1.1rem 1rem;
+  }
+
+  .swatch-chip {
+    height: 44px;
+    border-radius: 2px;
+    margin-bottom: 0.85rem;
+    border: 1px solid var(--rule-strong);
+  }
+
+  .swatch-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0 0 0.15rem;
+  }
+
+  .swatch-hex {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+
+  /* ---------- type specimens ---------- */
+
+  .specimen {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    align-items: baseline;
+    gap: 1.25rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .specimen:last-child { border-bottom: none; }
+
+  .specimen-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  .specimen-sample.display { font-family: var(--font-display); font-size: 2.1rem; }
+  .specimen-sample.heading { font-family: var(--font-display); font-size: 1.4rem; }
+  .specimen-sample.body { font-family: var(--font-body); font-size: 1.05rem; color: var(--ink-soft); }
+  .specimen-sample.mono { font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent); }
+
+  /* ---------- applied: conversation mock ---------- */
+
+  .transcript {
+    border: 1px solid var(--rule-strong);
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--paper-raised);
+  }
+
+  .turn {
+    padding: 1.1rem 1.3rem;
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 1rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  .turn + .turn { border-top: 1px solid var(--rule); }
+
+  .turn-role {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-top: 0.2rem;
+  }
+
+  .turn.assistant .turn-role { color: var(--accent); }
+  .turn p { margin: 0; }
+  .turn p + p { margin-top: 0.7rem; }
+
+  .turn code {
+    font-family: var(--font-mono);
+    background: var(--accent-wash);
+    padding: 0.1rem 0.35rem;
+    border-radius: 2px;
+    font-size: 0.88em;
+  }
+
+  /* ---------- components ---------- */
+
+  .component-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.6rem 1.1rem;
+    border-radius: 3px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: var(--paper);
+    cursor: pointer;
+  }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .btn.secondary {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.6rem;
+    border-radius: 2px;
+    border: 1px solid var(--rule-strong);
+    color: var(--ink-soft);
+  }
+
+  .tag.accent {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  pre.code-block {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    background: var(--paper-raised);
+    border: 1px solid var(--rule-strong);
+    border-radius: 3px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    color: var(--ink);
+    margin: 0;
+  }
+  pre.code-block .c { color: var(--ink-faint); }
+  pre.code-block .k { color: var(--accent); }
+
+  /* ---------- colophon ---------- */
+
+  footer {
+    margin-top: 4.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule-strong);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>
+
+<div class="page">
+
+  <div class="masthead">
+    <span>Design notes</span>
+    <span>Vol. I — First draft</span>
+  </div>
+
+  <h1 class="wordmark">Claude</h1>
+  <p class="standfirst">
+    A visual language for an assistant that <em>writes</em> — built like a page of correspondence,
+    not a product screen. Indigo ink by daylight; gold leaf by lamplight.
+  </p>
+
+  <section>
+    <p class="eyebrow">01 — Palette</p>
+    <h2>Ink, not paint</h2>
+    <p class="section-intro">
+      Two working colors, not a swatch board. A near-black warmed toward grey for reading, and a
+      single accent that changes character with the light — indigo ink at the desk, gold leaf under
+      lamplight — rather than a fixed brand hue.
+    </p>
+    <div class="swatches">
+      <div class="swatch">
+        <div class="swatch-chip" style="background: var(--paper); border-color: var(--rule-strong);"></div>
+        <p class="swatch-name">Paper</p>
+        <p class="swatch-hex">var(--paper)</p>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background: var(--ink);"></div>
+        <p class="swatch-name">Ink</p>
+        <p class="swatch-hex">var(--ink)</p>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background: var(--ink-soft);"></div>
+        <p class="swatch-name">Ink, soft</p>
+        <p class="swatch-hex">var(--ink-soft)</p>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background: var(--accent);"></div>
+        <p class="swatch-name">Accent</p>
+        <p class="swatch-hex">var(--accent)</p>
+      </div>
+      <div class="swatch">
+        <div class="swatch-chip" style="background: var(--rule-strong);"></div>
+        <p class="swatch-name">Rule</p>
+        <p class="swatch-hex">var(--rule-strong)</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">02 — Type</p>
+    <h2>A specimen, not a font stack</h2>
+    <p class="section-intro">
+      A manuscript serif carries the voice; a humanist sans carries the instructions; a monospace
+      marks anything literal — labels, code, coordinates.
+    </p>
+    <div class="specimens">
+      <div class="specimen">
+        <span class="specimen-label">Display</span>
+        <span class="specimen-sample display">Aa Reasoning</span>
+      </div>
+      <div class="specimen">
+        <span class="specimen-label">Heading</span>
+        <span class="specimen-sample heading">A design language for Claude</span>
+      </div>
+      <div class="specimen">
+        <span class="specimen-label">Body</span>
+        <span class="specimen-sample body">Set for reading at length, not for shouting across a hero.</span>
+      </div>
+      <div class="specimen">
+        <span class="specimen-label">Mono</span>
+        <span class="specimen-sample mono">--accent: #2C4A6E;</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">03 — Applied</p>
+    <h2>In a conversation</h2>
+    <p class="section-intro">
+      The system exists to carry dialogue, so it's judged in dialogue — not on a swatch board.
+    </p>
+    <div class="transcript">
+      <div class="turn user">
+        <span class="turn-role">You</span>
+        <p>Can this palette hold up in a dense reply, not just a headline?</p>
+      </div>
+      <div class="turn assistant">
+        <span class="turn-role">Claude</span>
+        <p>
+          It should. Body copy stays on <code>--ink-soft</code> so it doesn't compete with headings,
+          and the accent is reserved for things you'd actually click or quote — never for prose.
+        </p>
+        <p>That's the test: does it still read like a letter when there's this much of it?</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">04 — Components</p>
+    <h2>Marginalia</h2>
+    <p class="section-intro">Small marks, kept genuinely small — no rounded-lg, no drop shadows.</p>
+    <div class="component-row" style="margin-bottom: 1.4rem;">
+      <button class="btn">Continue</button>
+      <button class="btn secondary">Rewrite</button>
+      <span class="tag">draft</span>
+      <span class="tag accent">reviewed</span>
+    </div>
+    <pre class="code-block"><span class="c">/* token, not a one-off */</span>
+.accent-text {
+  color: <span class="k">var(--accent)</span>;
+}</pre>
+  </section>
+
+  <footer>
+    <span>Claude — design notes</span>
+    <span>Light: indigo ink · Dark: gold leaf</span>
+  </footer>
+
+</div>
